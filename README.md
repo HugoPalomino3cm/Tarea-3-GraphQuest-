@@ -49,7 +49,7 @@ https://github.com/HugoPalomino3cm/Tarea-2-Spotifind-.git](https://github.com/Hu
 Abre una terminal en VSCode (`Terminal -> New Terminal`) o usa PowerShell y ejecuta:
 
 ```bash
-gcc tdas/*.c tarea2.c -Wno-unused-result -o tarea2
+gcc tdas/*.c tarea3.c -Wno-unused-result -o tarea3
 ```
 
 > ⚠️ Si estás usando PowerShell, añade esto para que se muestren bien los caracteres especiales:
@@ -63,7 +63,7 @@ $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
 ### 3. Ejecutar el Programa
 
 ```bash
-./tarea2
+./tarea3_lecturacsv
 ```
 
 ---
