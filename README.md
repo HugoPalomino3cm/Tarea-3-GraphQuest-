@@ -37,7 +37,7 @@ Abre **Visual Studio Code** y sigue estos pasos:
 - Haz clic en **"Clonar repositorio"** e ingresa la siguiente URL:
 
 ```bash
-https://github.com/HugoPalomino3cm/Tarea-2-Spotifind-.git](https://github.com/HugoPalomino3cm/Tarea-3-GraphQuest-.git
+https://github.com/HugoPalomino3cm/Tarea-3-GraphQuest-.git
 ```
 
 - Elige una carpeta local para guardar el proyecto y ábrela en VSCode.
