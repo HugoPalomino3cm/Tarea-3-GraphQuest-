@@ -157,6 +157,26 @@ void *list_popBack(List *L) {
   return data;
 }
 
+// añadida por nosotros
+void list_remove(List *L, void *data) {
+    if (L == NULL || L->head == NULL) {
+        return; 
+    }
+    if (L->head->data == data) {
+        list_popFront(L);
+        return;
+    }
+    Node *current = L->head;
+    while (current->next != NULL && current->next->data != data) {
+        current = current->next;
+    }
+    if (current->next == NULL) {
+        return;
+    }
+    L->current = current;
+    list_popCurrent(L);
+}
+
 int list_size(List *L){
     return L->size;
 }

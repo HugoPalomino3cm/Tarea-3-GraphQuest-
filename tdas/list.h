@@ -6,6 +6,8 @@ typedef struct List List;
 // Esta función crea una lista vacía y devuelve un puntero a la lista.
 List *list_create();
 
+void list_remove(List *L, void *data);
+
 // Esta función devuelve un puntero al primer elemento de la lista.
 void *list_first(List *L);
 
