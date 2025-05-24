@@ -1,10 +1,10 @@
 #include "tdas/extra.h"
-#include "tdas/graph.h"
+#include "tdas/graph.c"
 #include "tdas/list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "funciones.h"
+#include "funciones.c"
 
 /**
  * Carga canciones desde un archivo CSV
