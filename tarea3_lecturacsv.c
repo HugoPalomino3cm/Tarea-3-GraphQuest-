@@ -1,10 +1,32 @@
 #include "tdas/extra.h"
-#include "tdas/graph.c"
+#include "tdas/graph.h"
 #include "tdas/list.h"
+#include "tdas/funciones.h"
+#include "HashMap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "funciones.c"
+
+
+typedef struct {
+    char* nombre;
+    int valor;
+    int peso;
+} Item;
+
+typedef struct {
+    int id;
+    char* nombre;
+    char* descripcion;
+    List* items;
+    int conexiones[4];
+    int es_final;
+} Escenario;
+
+typedef struct {
+    Escenario** nodos; 
+    int num_nodos;
+} Graph;
 
 /**
  * Carga canciones desde un archivo CSV
@@ -70,6 +92,6 @@ void leer_escenarios() {
 
 int main() {
   leer_escenarios();
-
+  
   return 0;
 }

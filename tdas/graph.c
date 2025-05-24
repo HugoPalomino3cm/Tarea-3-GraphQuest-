@@ -5,28 +5,6 @@
 #include <string.h>
 
 
-typedef struct {
-    char* nombre;
-    int valor;
-    int peso;
-} Item;
-
-// Estructura para un escenario (nodo del grafo)
-typedef struct {
-    int id;
-    char* nombre;
-    char* descripcion;
-    List* items;
-    int conexiones[4]; // Arriba, Abajo, Izquierda, Derecha (-1 si no hay conexión)
-    int es_final;
-} Escenario;
-
-// Estructura para el grafo
-typedef struct {
-    Escenario** nodos; // Arreglo de escenarios
-    int num_nodos;
-} Graph;
-
 // Crea un nuevo grafo con un número fijo de nodos
 Graph* graph_create(int num_nodos) {
     Graph* grafo = (Graph*)malloc(sizeof(Graph));
