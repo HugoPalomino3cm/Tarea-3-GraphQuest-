@@ -2,7 +2,7 @@
 
 # GraphQuest🎵
 
-<img src="https://ik.imagekit.io/storybird/images/eed760b4-0d8a-4806-a9b1-a36875e617e5/0_155117436.webp?tr=q-80"/>
+<img src="https://ik.imagekit.io/storybird/images/eed760b4-0d8a-4806-a9b1-a36875e617e5/0_155117436.webp?tr=q-80" style="width: 300px;"/>
 
 </div>
 
