@@ -4,6 +4,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Definiciones de colores ANSI
+#define RED     "\033[1;31m"
+#define GREEN   "\033[1;32m"
+#define YELLOW  "\033[1;33m"
+#define BLUE    "\033[1;34m"
+#define MAGENTA "\033[1;35m"
+#define CYAN    "\033[1;36m"
+#define RESET   "\033[0m"
+
 typedef struct {
     int id;
     char nombre[100];
@@ -18,45 +27,6 @@ typedef struct {
     int valor;
     int peso;
 } Item;
-
-typedef struct NodoGrafo {
-    Escenario* escenario;
-    struct NodoGrafo* arriba;
-    struct NodoGrafo* abajo;
-    struct NodoGrafo* izquierda;
-    struct NodoGrafo* derecha;
-} NodoGrafo;
-
-NodoGrafo* buscar_nodo_por_id(List* nodos, int id) {
-    for (NodoGrafo* nodo = list_first(nodos); nodo != NULL; nodo = list_next(nodos)) {
-        if (nodo->escenario->id == id)
-            return nodo;
-    }
-    return NULL;
-}
-
-List* construir_grafo(List* escenarios) {
-    List* nodos = list_create();
-
-    // Paso 1: crear nodos del grafo
-    for (Escenario* esc = list_first(escenarios); esc != NULL; esc = list_next(escenarios)) {
-        NodoGrafo* nodo = malloc(sizeof(NodoGrafo));
-        nodo->escenario = esc;
-        nodo->arriba = nodo->abajo = nodo->izquierda = nodo->derecha = NULL;
-        list_pushBack(nodos, nodo);
-    }
-
-    // Paso 2: enlazar nodos según sus conexiones
-    for (NodoGrafo* nodo = list_first(nodos); nodo != NULL; nodo = list_next(nodos)) {
-        Escenario* esc = nodo->escenario;
-        nodo->arriba = buscar_nodo_por_id(nodos, esc->arriba);
-        nodo->abajo = buscar_nodo_por_id(nodos, esc->abajo);
-        nodo->izquierda = buscar_nodo_por_id(nodos, esc->izquierda);
-        nodo->derecha = buscar_nodo_por_id(nodos, esc->derecha);
-    }
-
-    return nodos; // lista de nodos conectados
-}
 
 /**
  * Carga canciones desde un archivo CSV
@@ -108,15 +78,57 @@ List* leer_escenarios() {
     return escenarios;
 }
 
+typedef struct NodoGrafo {
+    Escenario* escenario;
+    struct NodoGrafo* arriba;
+    struct NodoGrafo* abajo;
+    struct NodoGrafo* izquierda;
+    struct NodoGrafo* derecha;
+} NodoGrafo;
 
-// Menú principal
+NodoGrafo* buscar_nodo_por_id(List* nodos, int id) {
+    for (NodoGrafo* nodo = list_first(nodos); nodo != NULL; nodo = list_next(nodos)) {
+        if (nodo->escenario->id == id)
+            return nodo;
+    }
+    return NULL;
+}
+
+List* construir_grafo(List* escenarios) {
+    List* nodos = list_create();
+
+    // Paso 1: crear nodos del grafo
+    for (Escenario* esc = list_first(escenarios); esc != NULL; esc = list_next(escenarios)) {
+        NodoGrafo* nodo = malloc(sizeof(NodoGrafo));
+        nodo->escenario = esc;
+        nodo->arriba = nodo->abajo = nodo->izquierda = nodo->derecha = NULL;
+        list_pushBack(nodos, nodo);
+    }
+
+    // Paso 2: enlazar nodos según sus conexiones
+    for (NodoGrafo* nodo = list_first(nodos); nodo != NULL; nodo = list_next(nodos)) {
+        Escenario* esc = nodo->escenario;
+        nodo->arriba = buscar_nodo_por_id(nodos, esc->arriba);
+        nodo->abajo = buscar_nodo_por_id(nodos, esc->abajo);
+        nodo->izquierda = buscar_nodo_por_id(nodos, esc->izquierda);
+        nodo->derecha = buscar_nodo_por_id(nodos, esc->derecha);
+    }
+
+    return nodos; // lista de nodos conectados
+}
+
+// Menú principal con diseño más estético
 void mostrarMenuPrincipal() {
     limpiarPantalla();
-    puts("==============================================================");
-    puts("              BIENVENIDO A GRAPHQUEST                ");
-    puts("==============================================================");
-    puts("1) JUGAR");
-    puts("2) SALIR");
+    printf(RED "✦══════════════════════════════════════════════════════✦\n" RESET);
+    printf(RED "                  BIENVENIDO A GRAPHQUEST               \n" RESET);
+    printf(RED "✦══════════════════════════════════════════════════════✦\n" RESET);
+    printf("\n");
+    printf(GREEN "  ✧ [1] JUGAR\n" RESET);
+    printf(GREEN "  ✧ [2] SALIR\n" RESET);
+    printf("\n");
+    printf(CYAN "✦═══════════════════════✦\n" RESET);
+    printf(CYAN "Ingresa tu opción (1 o 2): " RESET);
 }
 
 void play(List* escenarios, int num_jugadores) {
@@ -143,14 +155,14 @@ void play(List* escenarios, int num_jugadores) {
         int *t = &tiempo[turno];
 
         // Mostrar estado del juego de forma más clara
-        printf("=== TURNO DEL JUGADOR %d ===\n", turno + 1);
+        printf(RED "✦═══ TURNO DEL JUGADOR %d ═══✦\n" RESET, turno + 1);
         printf("------------------------\n");
-        printf("UBICACIÓN ACTUAL:\n");
+        printf(YELLOW "UBICACIÓN ACTUAL:\n" RESET);
         printf("  Escenario: %s\n", escenario->nombre);
         printf("  Descripción: %s\n", escenario->descripcion);
         printf("------------------------\n");
 
-        printf("ÍTEMS DISPONIBLES EN EL ESCENARIO:\n");
+        printf(GREEN "ÍTEMS DISPONIBLES EN EL ESCENARIO:\n" RESET);
         if (list_size(escenario->items) == 0) {
             printf("  (No hay ítems disponibles)\n");
         } else {
@@ -161,7 +173,7 @@ void play(List* escenarios, int num_jugadores) {
         }
         printf("------------------------\n");
 
-        printf("INVENTARIO:\n");
+        printf(YELLOW "INVENTARIO:\n" RESET);
         int peso_total = 0, puntaje_total = 0;
         if (list_size(inv) == 0) {
             printf("  (Tu inventario está vacío)\n");
@@ -175,11 +187,11 @@ void play(List* escenarios, int num_jugadores) {
         printf("  Peso total: %d kg | Puntaje total: %d pts\n", peso_total, puntaje_total);
         printf("------------------------\n");
 
-        printf("TIEMPO RESTANTE: %d segundos\n", *t);
+        printf(YELLOW "TIEMPO RESTANTE: %d segundos\n" RESET, *t);
         printf("------------------------\n");
 
         // Mostrar opciones de movimiento de forma intuitiva
-        printf("MOVIMIENTOS DISPONIBLES:\n");
+        printf(BLUE "MOVIMIENTOS DISPONIBLES:\n" RESET);
         if (escenario->arriba != -1) printf("  [w] Moverse hacia ARRIBA\n");
         if (escenario->abajo != -1) printf("  [s] Moverse hacia ABAJO\n");
         if (escenario->izquierda != -1) printf("  [a] Moverse a la IZQUIERDA\n");
@@ -189,14 +201,14 @@ void play(List* escenarios, int num_jugadores) {
         }
         printf("------------------------\n");
 
-        printf("ACCIONES DISPONIBLES:\n");
+        printf(MAGENTA "ACCIONES DISPONIBLES:\n" RESET);
         printf("  [1] Recoger un ítem del escenario\n");
         printf("  [2] Descartar un ítem de tu inventario\n");
         printf("  [3] Reiniciar la partida\n");
         printf("  [4] Salir de la partida\n");
         printf("------------------------\n");
 
-        printf("INSTRUCCIONES:\n");
+        printf(CYAN "INSTRUCCIONES:\n" RESET);
         printf("  - Elige una acción o movimiento (1-4 o w/a/s/d).\n");
         printf("  - Puedes realizar hasta %d acciones por turno.\n", num_jugadores == 1 ? 1 : 2);
         printf("  - Escribe [0] para terminar el turno antes de tiempo.\n");
@@ -221,12 +233,12 @@ void play(List* escenarios, int num_jugadores) {
                     for (Item *item = list_first(escenario->items); item != NULL; item = list_next(escenario->items)) {
                         printf("  %d) %s\n", i++, item->nombre);
                     }
-                    int idx;
-                    scanf("%d", &idx);
-                    if (idx > 0 && idx <= list_size(escenario->items)) {
-                        Item *item = list_remove_at(escenario->items, idx - 1);
+                    int elem;
+                    scanf("%d", &elem);
+                    if (elem > 0 && elem <= list_size(escenario->items)) {
+                        Item *item = list_remove_at(escenario->items, elem - 1);
                         list_pushBack(inv, item);
-                        printf("¡Has recogido %s!\n", item->nombre);
+                        printf(GREEN "¡Has recogido %s!\n" RESET, item->nombre);
                         presioneTeclaParaContinuar();
                     }
                 }
@@ -240,12 +252,12 @@ void play(List* escenarios, int num_jugadores) {
                     for (Item *item = list_first(inv); item != NULL; item = list_next(inv)) {
                         printf("  %d) %s\n", i++, item->nombre);
                     }
-                    int idx;
-                    scanf("%d", &idx);
-                    if (idx > 0 && idx <= list_size(inv)) {
-                        Item *item = list_remove_at(inv, idx - 1);
+                    int elem;
+                    scanf("%d", &elem);
+                    if (elem > 0 && elem <= list_size(inv)) {
+                        Item *item = list_remove_at(inv, elem - 1);
                         free(item);
-                        printf("¡Has descartado %s!\n", item->nombre);
+                        printf(GREEN "¡Has descartado %s!\n" RESET, item->nombre);
                     }
                 }
                 (*t) -= 1;
@@ -256,11 +268,11 @@ void play(List* escenarios, int num_jugadores) {
                     list_clean(inventario[i]);
                     escenario_actual[i] = escenarioPorId[1];
                 }
-                printf("¡Partida reiniciada con éxito!\n");
+                printf(GREEN "¡Partida reiniciada con éxito!\n" RESET);
                 presioneTeclaParaContinuar();
                 break; // salir del turno actual
             } else if (opcion == '4') {
-                printf("Saliendo de la partida...\n");
+                printf(CYAN "Saliendo de la partida...\n" RESET);
                 for (int i = 0; i < num_jugadores; i++) {
                     list_clean(inventario[i]);
                     free(inventario[i]);
@@ -290,13 +302,13 @@ void play(List* escenarios, int num_jugadores) {
             acciones++;
             limpiarPantalla();
             // Volver a mostrar el estado tras cada acción
-            printf("=== TURNO DEL JUGADOR %d ===\n", turno + 1);
+            printf(RED "✦═══ TURNO DEL JUGADOR %d ═══✦\n" RESET, turno + 1);
             printf("------------------------\n");
-            printf("UBICACIÓN ACTUAL:\n");
+            printf(YELLOW "UBICACIÓN ACTUAL:\n" RESET);
             printf("  Escenario: %s\n", escenario->nombre);
             printf("  Descripción: %s\n", escenario->descripcion);
             printf("------------------------\n");
-            printf("ÍTEMS DISPONIBLES EN EL ESCENARIO:\n");
+            printf(GREEN "ÍTEMS DISPONIBLES EN EL ESCENARIO:\n" RESET);
             if (list_size(escenario->items) == 0) {
                 printf("  (No hay ítems disponibles)\n");
             } else {
@@ -306,7 +318,7 @@ void play(List* escenarios, int num_jugadores) {
                 }
             }
             printf("------------------------\n");
-            printf("INVENTARIO:\n");
+            printf(YELLOW "INVENTARIO:\n" RESET);
             peso_total = 0, puntaje_total = 0;
             if (list_size(inv) == 0) {
                 printf("  (Tu inventario está vacío)\n");
@@ -319,9 +331,9 @@ void play(List* escenarios, int num_jugadores) {
             }
             printf("  Peso total: %d kg | Puntaje total: %d pts\n", peso_total, puntaje_total);
             printf("------------------------\n");
-            printf("TIEMPO RESTANTE: %d segundos\n", *t);
+            printf(YELLOW "TIEMPO RESTANTE: %d segundos\n" RESET, *t);
             printf("------------------------\n");
-            printf("MOVIMIENTOS DISPONIBLES:\n");
+            printf(BLUE "MOVIMIENTOS DISPONIBLES:\n" RESET);
             if (escenario->arriba != -1) printf("  [w] Moverse hacia ARRIBA\n");
             if (escenario->abajo != -1) printf("  [s] Moverse hacia ABAJO\n");
             if (escenario->izquierda != -1) printf("  [a] Moverse a la IZQUIERDA\n");
@@ -330,13 +342,13 @@ void play(List* escenarios, int num_jugadores) {
                 printf("  (No hay movimientos disponibles)\n");
             }
             printf("------------------------\n");
-            printf("ACCIONES DISPONIBLES:\n");
+            printf(MAGENTA "ACCIONES DISPONIBLES:\n" RESET);
             printf("  [1] Recoger un ítem del escenario\n");
             printf("  [2] Descartar un ítem de tu inventario\n");
             printf("  [3] Reiniciar la partida\n");
             printf("  [4] Salir de la partida\n");
             printf("------------------------\n");
-            printf("INSTRUCCIONES:\n");
+            printf(CYAN "INSTRUCCIONES:\n" RESET);
             printf("  - Elige una acción o movimiento (1-4 o w/a/s/d).\n");
             printf("  - Puedes realizar hasta %d acciones por turno.\n", num_jugadores == 1 ? 1 : 2);
             printf("  - Escribe [0] para terminar el turno antes de tiempo.\n");
@@ -351,10 +363,11 @@ void play(List* escenarios, int num_jugadores) {
         }
 
         if (jugadores_terminaron == num_jugadores || jugadores_sin_tiempo == num_jugadores) {
-            printf("\n¡FIN DEL JUEGO!\n");
+            printf("\n");
+            printf(RED "✦══════ ¡FIN DEL JUEGO! ══════✦\n" RESET);
             printf("------------------------\n");
             for (int i = 0; i < num_jugadores; i++) {
-                printf("INVENTARIO DEL JUGADOR %d:\n", i + 1);
+                printf(YELLOW "INVENTARIO DEL JUGADOR %d:\n" RESET, i + 1);
                 int total = 0;
                 for (Item *item = list_first(inventario[i]); item != NULL; item = list_next(inventario[i])) {
                     printf("  - %s (Valor: %d pts, Peso: %d kg)\n", item->nombre, item->valor, item->peso);
@@ -376,13 +389,13 @@ void play(List* escenarios, int num_jugadores) {
 
 void printdelosjugadores(List *escenarios)
 {
-    printf("=== SELECCIÓN DE MODO DE JUEGO ===\n");
+    printf(MAGENTA "✦══════ SELECCIÓN DE MODO DE JUEGO ══════✦\n" RESET);
     printf("------------------------\n");
     printf("Elige cómo quieres jugar:\n");
-    printf("  1) Modo Individual (1 jugador)\n");
-    printf("  2) Modo Multijugador (2 jugadores)\n");
+    printf(GREEN "  ✧ [1] Modo Individual (1 jugador)\n" RESET);
+    printf(GREEN "  ✧ [2] Modo Multijugador (2 jugadores)\n" RESET);
     printf("------------------------\n");
-    printf("Ingresa tu elección (1 o 2): ");
+    printf(CYAN "Ingresa tu elección (1 o 2): " RESET);
     int modo;
     scanf("%d", &modo);
 
@@ -401,8 +414,6 @@ int main() {
 
     do {
         mostrarMenuPrincipal();
-        puts("==========================================================\n");
-        printf("Ingresa tu opción (1 o 2): ");
         scanf(" %c", &opcion);
 
         limpiarPantalla();
@@ -420,13 +431,13 @@ int main() {
             break;
         }
         case '2':
-            puts("==========================================================");
-            puts("¡GRACIAS POR JUGAR GRAPHQUEST! SALIENDO...");
-            puts("==========================================================");
+            printf(RED "✦═══════════════════════════════════════✦\n" RESET);
+            printf(CYAN "¡GRACIAS POR JUGAR GRAPHQUEST! SALIENDO...\n" RESET);
+            printf(RED "✦═══════════════════════════════════════✦\n" RESET);
             break;
         default:
             printf("Opción no válida. Por favor, intenta de nuevo.\n");
-            puts("==========================================================");
+            printf(RED "✦═══════════════════════✦\n" RESET);
             break;
         }
         presioneTeclaParaContinuar();
