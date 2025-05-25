@@ -19,6 +19,45 @@ typedef struct {
     int peso;
 } Item;
 
+typedef struct NodoGrafo {
+    Escenario* escenario;
+    struct NodoGrafo* arriba;
+    struct NodoGrafo* abajo;
+    struct NodoGrafo* izquierda;
+    struct NodoGrafo* derecha;
+} NodoGrafo;
+
+NodoGrafo* buscar_nodo_por_id(List* nodos, int id) {
+    for (NodoGrafo* nodo = list_first(nodos); nodo != NULL; nodo = list_next(nodos)) {
+        if (nodo->escenario->id == id)
+            return nodo;
+    }
+    return NULL;
+}
+
+List* construir_grafo(List* escenarios) {
+    List* nodos = list_create();
+
+    // Paso 1: crear nodos del grafo
+    for (Escenario* esc = list_first(escenarios); esc != NULL; esc = list_next(escenarios)) {
+        NodoGrafo* nodo = malloc(sizeof(NodoGrafo));
+        nodo->escenario = esc;
+        nodo->arriba = nodo->abajo = nodo->izquierda = nodo->derecha = NULL;
+        list_pushBack(nodos, nodo);
+    }
+
+    // Paso 2: enlazar nodos según sus conexiones
+    for (NodoGrafo* nodo = list_first(nodos); nodo != NULL; nodo = list_next(nodos)) {
+        Escenario* esc = nodo->escenario;
+        nodo->arriba = buscar_nodo_por_id(nodos, esc->arriba);
+        nodo->abajo = buscar_nodo_por_id(nodos, esc->abajo);
+        nodo->izquierda = buscar_nodo_por_id(nodos, esc->izquierda);
+        nodo->derecha = buscar_nodo_por_id(nodos, esc->derecha);
+    }
+
+    return nodos; // lista de nodos conectados
+}
+
 /**
  * Carga canciones desde un archivo CSV
  */
@@ -69,44 +108,9 @@ List* leer_escenarios() {
     return escenarios;
 }
 
-typedef struct NodoGrafo {
-    Escenario* escenario;
-    struct NodoGrafo* arriba;
-    struct NodoGrafo* abajo;
-    struct NodoGrafo* izquierda;
-    struct NodoGrafo* derecha;
-} NodoGrafo;
 
-NodoGrafo* buscar_nodo_por_id(List* nodos, int id) {
-    for (NodoGrafo* nodo = list_first(nodos); nodo != NULL; nodo = list_next(nodos)) {
-        if (nodo->escenario->id == id)
-            return nodo;
-    }
-    return NULL;
-}
 
-List* construir_grafo(List* escenarios) {
-    List* nodos = list_create();
 
-    // Paso 1: crear nodos del grafo
-    for (Escenario* esc = list_first(escenarios); esc != NULL; esc = list_next(escenarios)) {
-        NodoGrafo* nodo = malloc(sizeof(NodoGrafo));
-        nodo->escenario = esc;
-        nodo->arriba = nodo->abajo = nodo->izquierda = nodo->derecha = NULL;
-        list_pushBack(nodos, nodo);
-    }
-
-    // Paso 2: enlazar nodos según sus conexiones
-    for (NodoGrafo* nodo = list_first(nodos); nodo != NULL; nodo = list_next(nodos)) {
-        Escenario* esc = nodo->escenario;
-        nodo->arriba = buscar_nodo_por_id(nodos, esc->arriba);
-        nodo->abajo = buscar_nodo_por_id(nodos, esc->abajo);
-        nodo->izquierda = buscar_nodo_por_id(nodos, esc->izquierda);
-        nodo->derecha = buscar_nodo_por_id(nodos, esc->derecha);
-    }
-
-    return nodos; // lista de nodos conectados
-}
 
 // Menú principal
 void mostrarMenuPrincipal() {
