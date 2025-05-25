@@ -4,6 +4,7 @@
         "list.h": "c",
         "hashmap.h": "c",
         "stdlib.h": "c",
-        "heap.h": "c"
+        "heap.h": "c",
+        "extra.h": "c"
     }
 }

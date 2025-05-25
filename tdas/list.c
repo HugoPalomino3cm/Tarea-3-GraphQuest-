@@ -36,6 +36,62 @@ void *list_first(List *L) {
   return L->current->data;
 }
 
+void* list_remove_at(List* L, int index) {
+    if (L == NULL || L->head == NULL || index < 0 || index >= L->size) {
+        return NULL;
+    }
+
+    Node* temp = L->head;
+    Node* prev = NULL;
+    int i = 0;
+
+    if (index == 0) {
+        return list_popFront(L);
+    }
+
+    while (temp != NULL && i < index) {
+        prev = temp;
+        temp = temp->next;
+        i++;
+    }
+
+    if (temp == NULL) {
+        return NULL; 
+    }
+
+    prev->next = temp->next;
+    if (temp == L->tail) {
+        L->tail = prev; 
+    }
+    if (temp == L->current) {
+        L->current = prev->next; 
+    }
+
+    void* data = temp->data;
+    free(temp);
+    L->size--;
+    return data;
+}
+
+void* list_get(List* L, int index) {
+    if (L == NULL || L->head == NULL || index < 0 || index >= L->size) {
+        return NULL; // Lista no inicializada, vacía o índice inválido
+    }
+
+    Node* current = L->head;
+    int i = 0;
+    while (current != NULL && i < index) {
+        current = current->next;
+        i++;
+    }
+
+    if (current == NULL) {
+        return NULL; // Índice fuera de rango
+    }
+
+    return current->data;
+}
+
 void *list_next(List *L) {
   if (L == NULL || L->current == NULL || L->current->next == NULL) {
     return NULL; // Lista vacía, no inicializada o no hay más elementos
