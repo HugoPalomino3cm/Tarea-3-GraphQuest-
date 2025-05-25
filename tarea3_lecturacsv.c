@@ -109,9 +109,6 @@ List* leer_escenarios() {
 }
 
 
-
-
-
 // Menú principal
 void mostrarMenuPrincipal() {
     limpiarPantalla();
