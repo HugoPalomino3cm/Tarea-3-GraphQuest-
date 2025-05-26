@@ -143,6 +143,5 @@ A continuación se muestra un ejemplo de cómo interactuar con **GraphQuest**:
 
 ### Trabajo en conjunto
 - **Interfaz de usuario**: Diseñaron e implementaron la interfaz en `play()` con colores ANSI (e.g., `RED`, `GREEN`), mostrando información clara como escenario, ítems, inventario y tiempo restante.
-- **Depuración de tiempo**: Ajustaron iterativamente la fórmula de deducción de tiempo en `play()` (`(*t) -= (int)ceil((peso_total + 1) / 5.0) * movimientos`) para reflejar el impacto del peso del inventario, asegurando que movimientos con inventarios pesados consuman más tiempo.
-- **Pruebas y balance**: Realizaron pruebas conjuntas para balancear el juego, ajustando valores como el divisor en la fórmula de tiempo y verificando que el flujo de turnos funcione correctamente para 1 o 2 jugadores.
+- **Pruebas y balance**: Realizamos pruebas conjuntas para balancear el juego, ajustando valores como el divisor en la fórmula de tiempo y verificando que el flujo de turnos funcione correctamente para 1 o 2 jugadores.
 
