@@ -119,7 +119,7 @@ A continuación se muestra un ejemplo de cómo interactuar con **GraphQuest**:
 
 ## ⚠️ Posibles Errores Comunes
 
-- **Movimientos no reflejan el peso actual**: Si recoges un ítem y luego te mueves, el tiempo deducido puede no usar el `peso_total` actualizado. **Solución**: Confirma que `peso_total` se actualiza inmediatamente después de recoger un ítem (`peso_total += item->peso`) y que la deducción de tiempo para movimientos se calcula al final del turno con el `peso_total` final.
+- **aparece de forma repetida el presionar una tecla 
 
 ---
 
