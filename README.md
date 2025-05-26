@@ -119,7 +119,8 @@ A continuación se muestra un ejemplo de cómo interactuar con **GraphQuest**:
 
 ## ⚠️ Posibles Errores Comunes
 
-- **aparece de forma repetida el presionar una tecla 
+- **aparece de forma repetida el presionar una tecla
+- **posibilidad de que ciertos mensajes se repitan mucho al final o en partes del juego
 
 ---
 
