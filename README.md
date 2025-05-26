@@ -86,32 +86,32 @@ A continuación se muestra un ejemplo de cómo interactuar con **GraphQuest**:
 ### 📌 Cómo jugar GraphQuest
 
 1. **Inicia el programa.**  
-   Se te mostrará un menú con dos opciones: Para comenzar una partida, **debes presionar la tecla `1` y luego Enter**. Esto iniciará el juego y cargará el mapa de escenarios.
+   Se te mostrará un menú con dos opciones: Para comenzar una partida, **debes presionar la tecla `1` y luego Enter**. Esto iniciará el juego y cargará el mapa de escenarios a las 11:51 PM -04 del domingo, 25 de mayo de 2025.
 
 2. **Selecciona la opción 1 para comenzar a jugar.**  
-El juego cargará el mapa de escenarios y te pedirá que selecciones el número de jugadores:
+   El juego cargará el mapa de escenarios y te pedirá que selecciones el número de jugadores:
 
 3. **Empieza la partida.**  
-Verás la descripción del escenario donde te encuentras, los ítems disponibles, tu inventario y el tiempo restante.
+   Verás la descripción del escenario donde te encuentras, los ítems disponibles, tu inventario y el tiempo restante.
 
 4. **Durante tu turno puedes:**
-- Moverte entre escenarios usando las teclas:
-  - `w` → Arriba  
-  - `a` → Izquierda  
-  - `s` → Abajo  
-  - `d` → Derecha  
-- Recoger un ítem del escenario con la opción `1`
-- Descartar un ítem de tu inventario con la opción `2`
-- Reiniciar la partida con `3`
-- Salir del juego con `4`
-- Escribir `0` para terminar tu turno antes de tiempo
+   - Moverte entre escenarios usando las teclas:
+     - `w` → Arriba  
+     - `a` → Izquierda  
+     - `s` → Abajo  
+     - `d` → Derecha  
+   - Recoger un ítem del escenario con la opción `1`
+   - Descartar un ítem de tu inventario con la opción `2`
+   - Reiniciar la partida con `3`
+   - Salir del juego con `4`
+   - Escribir `0` para terminar tu turno antes de tiempo
 
 5. **Cada acción consume tiempo.**  
-- Moverte te consume más tiempo si llevas muchos objetos.  
-- Cuando se acaba el tiempo de un jugador, termina su participación.
+   - Moverte te consume más tiempo si llevas muchos objetos.  
+   - Cuando se acaba el tiempo de un jugador, termina su participación.
 
 6. **El objetivo del juego:**  
-Recolectar los ítems más valiosos posibles antes de que se acabe el tiempo, gestionando el peso que cargas y explorando los distintos escenarios conectados.
+   Recolectar los ítems más valiosos posibles antes de que se acabe el tiempo, gestionando el peso que cargas y explorando los distintos escenarios conectados.
 
 7. **Repite turnos** entre jugadores hasta que decidan salir o se acabe el tiempo.
 
