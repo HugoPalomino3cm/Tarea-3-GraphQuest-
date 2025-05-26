@@ -119,20 +119,30 @@ Recolectar los ítems más valiosos posibles antes de que se acabe el tiempo, ge
 
 ## ⚠️ Posibles Errores Comunes
 
-- falta poner los errores
+- **Movimientos no reflejan el peso actual**: Si recoges un ítem y luego te mueves, el tiempo deducido puede no usar el `peso_total` actualizado. **Solución**: Confirma que `peso_total` se actualiza inmediatamente después de recoger un ítem (`peso_total += item->peso`) y que la deducción de tiempo para movimientos se calcula al final del turno con el `peso_total` final.
+
+---
+
 
 ![GIF Externo](https://media.tenor.com/X8854xxuQ_EAAAAM/destroy-code-mad.gif)
+
 
 # Contribuciones
 
 ## Aportes individuales
 
 ### Hugo Palomino
--falta
+- **Lectura de datos**: Implementó `leer_escenarios()` para cargar los escenarios desde "data/graphquest.csv", parseando ítems y conexiones con `split_string` y gestionando memoria de listas dinámicas.
+- **Interfaz inicial**: Diseñó el menú principal en `mostrarMenuPrincipal()` con colores ANSI y opciones para iniciar o salir del juego, mejorando la experiencia visual.
+- **Flujo del juego**: Estructuró el sistema de turnos en `play()` y `printdelosjugadores()`, permitiendo selección de modo (1 o 2 jugadores) y alternancia de turnos.
 
 ### Felipe Romero
--falta
+- **Grafo de escenarios**: Creó `construir_grafo()` y `buscar_nodo_por_id()` para conectar nodos de tipo `NodoGrafo`, permitiendo la navegación entre escenarios mediante las direcciones `arriba`, `abajo`, `izquierda`, `derecha`.
+- **Gestión de inventario**: Implementó la lógica en `play()` para recoger y descartar ítems, actualizando `peso_total` y `puntaje_total` dinámicamente para reflejar el estado del inventario.
+- **Mecánica de tiempo**: Introdujo la deducción de tiempo inicial en `play()`, con ajustes posteriores para movimientos (`(*t) -= (int)ceil((peso_total + 1) / 10.0)`) y acciones como recoger ítems (`(*t) -= 1`).
 
 ### Trabajo en conjunto
--falta
+- **Interfaz de usuario**: Diseñaron e implementaron la interfaz en `play()` con colores ANSI (e.g., `RED`, `GREEN`), mostrando información clara como escenario, ítems, inventario y tiempo restante.
+- **Depuración de tiempo**: Ajustaron iterativamente la fórmula de deducción de tiempo en `play()` (`(*t) -= (int)ceil((peso_total + 1) / 5.0) * movimientos`) para reflejar el impacto del peso del inventario, asegurando que movimientos con inventarios pesados consuman más tiempo.
+- **Pruebas y balance**: Realizaron pruebas conjuntas para balancear el juego, ajustando valores como el divisor en la fórmula de tiempo y verificando que el flujo de turnos funcione correctamente para 1 o 2 jugadores.
 
