@@ -16,6 +16,7 @@
 #define CYAN    "\033[1;36m"
 #define RESET   "\033[0m"
 
+//Escenario para representar un Escenario dentro del juego
 typedef struct {
     int id;
     char nombre[100];
@@ -25,12 +26,14 @@ typedef struct {
     int esFinal;
 } Escenario;
 
+//Estructura para representar un item del juego
 typedef struct {
     char nombre[50];
     int valor;
     int peso;
-} Item;
+} Item; 
 
+//Estructura para representar un nodo del grafo
 typedef struct NodoGrafo {
     Escenario* escenario;
     struct NodoGrafo* arriba;
@@ -138,7 +141,7 @@ List* leer_escenarios() {
 /**
  * Construye un grafo a partir de una lista de escenarios, conectando nodos según sus IDs.
  * @param escenarios Lista de escenarios.
- * @return HashMap con nodos conectados o NULL si hay un error.
+ * @return HashMap con nodos conectados o NULL si existe un error.
  */
 HashMap* construir_grafo(List* escenarios) {
     if (!escenarios) return NULL;
@@ -191,7 +194,7 @@ HashMap* construir_grafo(List* escenarios) {
 
 /**
  * Libera los recursos del juego (escenarios e ítems).
- * @param escenarios Lista de escenarios.
+ * @param escenarios Lista de escenarios totales.
  */
 void liberar_escenarios(List* escenarios) {
     if (!escenarios) return;
@@ -211,7 +214,7 @@ void liberar_escenarios(List* escenarios) {
 
 /**
  * Libera los nodos del grafo.
- * @param nodos HashMap con los nodos del grafo.
+ * @param nodos HashMap con los nodos del grafo principal del juego.
  */
 void liberar_nodos(HashMap* nodos) {
     if (!nodos) return;
@@ -242,7 +245,7 @@ void mostrarMenuPrincipal() {
  * Muestra la interfaz del turno del jugador.
  * @param escenario Puntero al escenario actual.
  * @param inv Lista de ítems en el inventario del jugador.
- * @param t Puntero al tiempo restante del jugador.
+ * @param t Puntero al tiempo restante del jugador o los jugadores.
  * @param turno Índice del jugador actual (0 o 1).
  * @param num_jugadores Número de jugadores (1 o 2).
  */
@@ -308,9 +311,9 @@ void mostrar_interfaz_turno(Escenario* escenario, List* inv, int* t, int turno, 
 
 /**
  * Muestra el mensaje de fin de juego y los resultados de los jugadores.
- * @param escenario_actual Array de nodos de escenario actual para cada jugador.
- * @param inventario Array de listas de inventario para cada jugador.
- * @param tiempo Array de tiempos restantes para cada jugador.
+ * @param escenario_actual Arreglo de nodos de escenario actual para cada jugador.
+ * @param inventario Arreglo de listas de inventario para cada jugador.
+ * @param tiempo Arreglo de tiempos restantes para cada jugador.
  * @param num_jugadores Número de jugadores (1 o 2).
  */
 void mostrar_fin_juego(NodoGrafo* escenario_actual[], List* inventario[], int tiempo[], int num_jugadores) {
