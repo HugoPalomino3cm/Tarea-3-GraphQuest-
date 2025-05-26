@@ -79,17 +79,21 @@ List* leer_escenarios() {
         Escenario *e = malloc(sizeof(Escenario));
         if (!e) {
             perror("Error al asignar memoria para Escenario\n");
-            continue; // Continúa con la siguiente línea
+            free(campos);
+            continue;
         }
 
         e->id = atoi(campos[0]);
-        strcpy(e->nombre, campos[1]);
-        strcpy(e->descripcion, campos[2]);
+        strncpy(e->nombre, campos[1], sizeof(e->nombre) - 1);
+        e->nombre[sizeof(e->nombre) - 1] = '\0';
+        strncpy(e->descripcion, campos[2], sizeof(e->descripcion) - 1);
+        e->descripcion[sizeof(e->descripcion) - 1] = '\0';
 
         e->items = list_create();
         if (!e->items) {
             perror("Error al crear lista de ítems\n");
             free(e);
+            free(campos);
             continue;
         }
         List *itemsStrings = split_string(campos[3], ";");
@@ -104,7 +108,8 @@ List* leer_escenarios() {
                         free(values);
                         continue;
                     }
-                    strcpy(item->nombre, (char*)list_get(values, 0));
+                    strncpy(item->nombre, (char*)list_get(values, 0), sizeof(item->nombre) - 1);
+                    item->nombre[sizeof(item->nombre) - 1] = '\0';
                     item->valor = atoi((char*)list_get(values, 1));
                     item->peso = atoi((char*)list_get(values, 2));
                     list_pushBack(e->items, item);
@@ -123,7 +128,7 @@ List* leer_escenarios() {
         e->esFinal = es_final(campos[8]);
 
         list_pushBack(escenarios, e);
-        free(campos); // Libera la memoria de campos
+        free(campos);
     }
 
     fclose(archivo);
@@ -185,6 +190,39 @@ HashMap* construir_grafo(List* escenarios) {
 }
 
 /**
+ * Libera los recursos del juego (escenarios e ítems).
+ * @param escenarios Lista de escenarios.
+ */
+void liberar_escenarios(List* escenarios) {
+    if (!escenarios) return;
+    for (Escenario* e = list_first(escenarios); e != NULL; e = list_next(escenarios)) {
+        if (e->items) {
+            for (Item* item = list_first(e->items); item != NULL; item = list_next(e->items)) {
+                free(item);
+            }
+            list_clean(e->items);
+            free(e->items);
+        }
+        free(e);
+    }
+    list_clean(escenarios);
+    free(escenarios);
+}
+
+/**
+ * Libera los nodos del grafo.
+ * @param nodos HashMap con los nodos del grafo.
+ */
+void liberar_nodos(HashMap* nodos) {
+    if (!nodos) return;
+    for (Pair* pair = firstMap(nodos); pair != NULL; pair = nextMap(nodos)) {
+        free(pair->value);
+    }
+    hashmap_clean(nodos);
+    free(nodos);
+}
+
+/**
  * Muestra el menú principal del juego con opciones de jugar o salir.
  */
 void mostrarMenuPrincipal() {
@@ -198,6 +236,108 @@ void mostrarMenuPrincipal() {
     printf("\n");
     printf(CYAN "✦═══════════════════════✦\n" RESET);
     printf(CYAN "Ingresa tu opción (1 o 2): " RESET);
+}
+
+/**
+ * Muestra la interfaz del turno del jugador.
+ * @param escenario Puntero al escenario actual.
+ * @param inv Lista de ítems en el inventario del jugador.
+ * @param t Puntero al tiempo restante del jugador.
+ * @param turno Índice del jugador actual (0 o 1).
+ * @param num_jugadores Número de jugadores (1 o 2).
+ */
+void mostrar_interfaz_turno(Escenario* escenario, List* inv, int* t, int turno, int num_jugadores) {
+    printf(RED "✦═══ TURNO DEL JUGADOR %d ═══✦\n" RESET, turno + 1);
+    printf("------------------------\n");
+    printf(YELLOW "UBICACIÓN ACTUAL:\n" RESET);
+    printf("  Escenario: %s\n", escenario->nombre);
+    printf("  Descripción: %s\n", escenario->descripcion);
+    printf("------------------------\n");
+
+    printf(GREEN "ÍTEMS DISPONIBLES EN EL ESCENARIO:\n" RESET);
+    if (list_size(escenario->items) == 0) {
+        printf("  (No hay ítems disponibles)\n");
+    } else {
+        int i = 1;
+        for (Item* item = list_first(escenario->items); item != NULL; item = list_next(escenario->items)) {
+            printf("  %d) %s (Valor: %d pts, Peso: %d kg)\n", i++, item->nombre, item->valor, item->peso);
+        }
+    }
+    printf("------------------------\n");
+
+    printf(YELLOW "INVENTARIO:\n" RESET);
+    int peso_total = 0, puntaje_total = 0;
+    if (list_size(inv) == 0) {
+        printf("  (Tu inventario está vacío)\n");
+    } else {
+        for (Item* item = list_first(inv); item != NULL; item = list_next(inv)) {
+            printf("  - %s (Valor: %d pts, Peso: %d kg)\n", item->nombre, item->valor, item->peso);
+            puntaje_total += item->valor;
+            peso_total += item->peso;
+        }
+    }
+    printf("  Peso total: %d kg | Puntaje total: %d pts\n", peso_total, puntaje_total);
+    printf("------------------------\n");
+
+    printf(YELLOW "TIEMPO RESTANTE: %d segundos\n" RESET, *t);
+    printf("------------------------\n");
+
+    printf(BLUE "MOVIMIENTOS DISPONIBLES:\n" RESET);
+    if (escenario->arriba != -1) printf("  [w] Moverse hacia ARRIBA\n");
+    if (escenario->abajo != -1) printf("  [s] Moverse hacia ABAJO\n");
+    if (escenario->izquierda != -1) printf("  [a] Moverse a la IZQUIERDA\n");
+    if (escenario->derecha != -1) printf("  [d] Moverse a la DERECHA\n");
+    if (escenario->arriba == -1 && escenario->abajo == -1 && escenario->izquierda == -1 && escenario->derecha == -1) {
+        printf("  (No hay movimientos disponibles)\n");
+    }
+    printf("------------------------\n");
+
+    printf(MAGENTA "ACCIONES DISPONIBLES:\n" RESET);
+    printf("  [1] Recoger un ítem del escenario\n");
+    printf("  [2] Descartar un ítem de tu inventario\n");
+    printf("  [3] Reiniciar la partida\n");
+    printf("  [4] Salir de la partida\n");
+    printf("------------------------\n");
+
+    printf(CYAN "INSTRUCCIONES:\n" RESET);
+    printf("  - Elige una acción o movimiento (1-4 o w/a/s/d).\n");
+    printf("  - Puedes realizar hasta %d acciones por turno.\n", num_jugadores == 1 ? 1 : 2);
+    printf("  - Escribe [0] para terminar el turno antes de tiempo.\n");
+    printf(">> ");
+}
+
+/**
+ * Muestra el mensaje de fin de juego y los resultados de los jugadores.
+ * @param escenario_actual Array de nodos de escenario actual para cada jugador.
+ * @param inventario Array de listas de inventario para cada jugador.
+ * @param tiempo Array de tiempos restantes para cada jugador.
+ * @param num_jugadores Número de jugadores (1 o 2).
+ */
+void mostrar_fin_juego(NodoGrafo* escenario_actual[], List* inventario[], int tiempo[], int num_jugadores) {
+    printf("\n" RED "✦══════ ¡FIN DEL JUEGO! ══════✦\n" RESET);
+    printf("------------------------\n");
+    for (int i = 0; i < num_jugadores; i++) {
+        if (escenario_actual[i]->escenario->esFinal) {
+            printf(GREEN "¡FELICITACIONES JUGADOR %d! HAS LLEGADO A LA SALIDA.\n" RESET, i + 1);
+            printf("------------------------\n");
+        }
+        if (tiempo[i] <= 0) {
+            printf(RED "¡JUGADOR %d HA PERDIDO! SE ACABÓ EL TIEMPO.\n" RESET, i + 1);
+            printf("------------------------\n");
+        }
+        printf(YELLOW "INVENTARIO DEL JUGADOR %d:\n" RESET, i + 1);
+        int total = 0;
+        if (list_size(inventario[i]) == 0) {
+            printf("  (Inventario vacío)\n");
+        } else {
+            for (Item* item = list_first(inventario[i]); item != NULL; item = list_next(inventario[i])) {
+                printf("  - %s (Valor: %d pts, Peso: %d kg)\n", item->nombre, item->valor, item->peso);
+                total += item->valor;
+            }
+        }
+        printf("  Puntaje final: %d pts\n", total);
+        printf("------------------------\n");
+    }
 }
 
 /**
@@ -222,73 +362,57 @@ void play(HashMap* nodos, int num_jugadores) {
     List* inventario[2] = {list_create(), list_create()};
     int tiempo[2] = {10, 10};
 
+    // Verificar creación de inventarios
+    for (int i = 0; i < 2; i++) {
+        if (!inventario[i]) {
+            printf("Error: No se pudo crear el inventario del jugador %d.\n", i + 1);
+            for (int j = 0; j < i; j++) {
+                list_clean(inventario[j]);
+                free(inventario[j]);
+            }
+            return;
+        }
+    }
+
     int turno = 0;
 
     while (1) {
+        // Verificar condición de fin de juego al inicio del turno
+        int jugadores_terminaron = 0, jugadores_sin_tiempo = 0;
+        for (int i = 0; i < num_jugadores; i++) {
+            if (escenario_actual[i]->escenario->esFinal) jugadores_terminaron++;
+            if (tiempo[i] <= 0) jugadores_sin_tiempo++;
+        }
+
+        if (jugadores_terminaron == num_jugadores || jugadores_sin_tiempo == num_jugadores) {
+            limpiarPantalla();
+            mostrar_fin_juego(escenario_actual, inventario, tiempo, num_jugadores);
+            presioneTeclaParaContinuar();
+            // Liberar inventarios
+            for (int i = 0; i < 2; i++) {
+                for (Item* item = list_first(inventario[i]); item != NULL; item = list_next(inventario[i])) {
+                    free(item);
+                }
+                list_clean(inventario[i]);
+                free(inventario[i]);
+            }
+            return;
+        }
+
         limpiarPantalla();
 
         NodoGrafo* nodo_actual = escenario_actual[turno];
         Escenario* escenario = nodo_actual->escenario;
         List* inv = inventario[turno];
         int* t = &tiempo[turno];
+        int peso_total = 0;
 
-        printf(RED "✦═══ TURNO DEL JUGADOR %d ═══✦\n" RESET, turno + 1);
-        printf("------------------------\n");
-        printf(YELLOW "UBICACIÓN ACTUAL:\n" RESET);
-        printf("  Escenario: %s\n", escenario->nombre);
-        printf("  Descripción: %s\n", escenario->descripcion);
-        printf("------------------------\n");
-
-        printf(GREEN "ÍTEMS DISPONIBLES EN EL ESCENARIO:\n" RESET);
-        if (list_size(escenario->items) == 0) {
-            printf("  (No hay ítems disponibles)\n");
-        } else {
-            int i = 1;
-            for (Item* item = list_first(escenario->items); item != NULL; item = list_next(escenario->items)) {
-                printf("  %d) %s (Valor: %d pts, Peso: %d kg)\n", i++, item->nombre, item->valor, item->peso);
-            }
+        // Calcular peso total del inventario
+        for (Item* item = list_first(inv); item != NULL; item = list_next(inv)) {
+            peso_total += item->peso;
         }
-        printf("------------------------\n");
 
-        printf(YELLOW "INVENTARIO:\n" RESET);
-        int peso_total = 0, puntaje_total = 0;
-        if (list_size(inv) == 0) {
-            printf("  (Tu inventario está vacío)\n");
-        } else {
-            for (Item* item = list_first(inv); item != NULL; item = list_next(inv)) {
-                printf("  - %s (Valor: %d pts, Peso: %d kg)\n", item->nombre, item->valor, item->peso);
-                puntaje_total += item->valor;
-                peso_total += item->peso;
-            }
-        }
-        printf("  Peso total: %d kg | Puntaje total: %d pts\n", peso_total, puntaje_total);
-        printf("------------------------\n");
-
-        printf(YELLOW "TIEMPO RESTANTE: %d segundos\n" RESET, *t);
-        printf("------------------------\n");
-
-        printf(BLUE "MOVIMIENTOS DISPONIBLES:\n" RESET);
-        if (escenario->arriba != -1) printf("  [w] Moverse hacia ARRIBA\n");
-        if (escenario->abajo != -1) printf("  [s] Moverse hacia ABAJO\n");
-        if (escenario->izquierda != -1) printf("  [a] Moverse a la IZQUIERDA\n");
-        if (escenario->derecha != -1) printf("  [d] Moverse a la DERECHA\n");
-        if (escenario->arriba == -1 && escenario->abajo == -1 && escenario->izquierda == -1 && escenario->derecha == -1) {
-            printf("  (No hay movimientos disponibles)\n");
-        }
-        printf("------------------------\n");
-
-        printf(MAGENTA "ACCIONES DISPONIBLES:\n" RESET);
-        printf("  [1] Recoger un ítem del escenario\n");
-        printf("  [2] Descartar un ítem de tu inventario\n");
-        printf("  [3] Reiniciar la partida\n");
-        printf("  [4] Salir de la partida\n");
-        printf("------------------------\n");
-
-        printf(CYAN "INSTRUCCIONES:\n" RESET);
-        printf("  - Elige una acción o movimiento (1-4 o w/a/s/d).\n");
-        printf("  - Puedes realizar hasta %d acciones por turno.\n", num_jugadores == 1 ? 1 : 2);
-        printf("  - Escribe [0] para terminar el turno antes de tiempo.\n");
-        printf(">> ");
+        mostrar_interfaz_turno(escenario, inv, t, turno, num_jugadores);
 
         int acciones = 0;
         while (acciones < (num_jugadores == 1 ? 1 : 2)) {
@@ -308,9 +432,9 @@ void play(HashMap* nodos, int num_jugadores) {
                         printf("  %d) %s\n", i++, item->nombre);
                     }
                     int elem;
-                    if (scanf("%d", &elem) != 1 || elem < 0 || elem > list_size(escenario->items)) {
+                    char input[100];
+                    if (!fgets(input, sizeof(input), stdin) || sscanf(input, "%d", &elem) != 1 || elem < 0 || elem > list_size(escenario->items)) {
                         printf("Entrada inválida.\n");
-                        while (getchar() != '\n'); // Limpiar buffer
                         continue;
                     }
                     if (elem > 0) {
@@ -331,9 +455,9 @@ void play(HashMap* nodos, int num_jugadores) {
                         printf("  %d) %s\n", i++, item->nombre);
                     }
                     int elem;
-                    if (scanf("%d", &elem) != 1 || elem < 0 || elem > list_size(inv)) {
+                    char input[100];
+                    if (!fgets(input, sizeof(input), stdin) || sscanf(input, "%d", &elem) != 1 || elem < 0 || elem > list_size(inv)) {
                         printf("Entrada inválida.\n");
-                        while (getchar() != '\n'); // Limpiar buffer
                         continue;
                     }
                     if (elem > 0) {
@@ -347,6 +471,9 @@ void play(HashMap* nodos, int num_jugadores) {
             } else if (opcion == '3') {
                 for (int i = 0; i < num_jugadores; i++) {
                     tiempo[i] = 10;
+                    for (Item* item = list_first(inventario[i]); item != NULL; item = list_next(inventario[i])) {
+                        free(item);
+                    }
                     list_clean(inventario[i]);
                     escenario_actual[i] = nodo_inicial;
                 }
@@ -355,7 +482,7 @@ void play(HashMap* nodos, int num_jugadores) {
                 break;
             } else if (opcion == '4') {
                 printf(CYAN "Saliendo de la partida...\n" RESET);
-                for (int i = 0; i < num_jugadores; i++) {
+                for (int i = 0; i < 2; i++) {
                     for (Item* item = list_first(inventario[i]); item != NULL; item = list_next(inventario[i])) {
                         free(item);
                     }
@@ -376,6 +503,11 @@ void play(HashMap* nodos, int num_jugadores) {
                 if (p) {
                     escenario_actual[turno] = (NodoGrafo*)p->value;
                     (*t) -= (int)ceil((double)(peso_total + 1) / 10.0);
+                    printf(GREEN "¡Te has movido hacia %s!\n" RESET,
+                           opcion == 'w' ? "arriba" :
+                           opcion == 's' ? "abajo" :
+                           opcion == 'a' ? "la izquierda" : "la derecha");
+                    presioneTeclaParaContinuar();
                 } else {
                     printf("Movimiento inválido.\n");
                     continue;
@@ -387,43 +519,15 @@ void play(HashMap* nodos, int num_jugadores) {
 
             escenario = escenario_actual[turno]->escenario;
             acciones++;
-            limpiarPantalla();
-            printf(RED "✦═══ TURNO DEL JUGADOR %d ═══✦\n" RESET, turno + 1);
-            printf("------------------------\n");
-            printf(YELLOW "UBICACIÓN ACTUAL:\n" RESET);
-            printf("  Escenario: %s\n", escenario->nombre);
-            printf("  Descripción: %s\n", escenario->descripcion);
-        }
-
-        int jugadores_terminaron = 0, jugadores_sin_tiempo = 0;
-        for (int i = 0; i < num_jugadores; i++) {
-            if (escenario_actual[i]->escenario->esFinal) jugadores_terminaron++;
-            if (tiempo[i] <= 0) jugadores_sin_tiempo++;
-        }
-
-        if (jugadores_terminaron == num_jugadores || jugadores_sin_tiempo == num_jugadores) {
-            printf("\n" RED "✦══════ ¡FIN DEL JUEGO! ══════✦\n" RESET);
-            printf("------------------------\n");
-            for (int i = 0; i < num_jugadores; i++) {
-                if (escenario_actual[i]->escenario->esFinal) {
-                    printf(GREEN "¡FELICITACIONES JUGADOR %d! HAS LLEGADO A LA SALIDA.\n" RESET, i + 1);
-                    printf("------------------------\n");
+            if (acciones < (num_jugadores == 1 ? 1 : 2)) {
+                limpiarPantalla();
+                // Recalcular peso total después de posibles cambios en el inventario
+                peso_total = 0;
+                for (Item* item = list_first(inv); item != NULL; item = list_next(inv)) {
+                    peso_total += item->peso;
                 }
-                if (tiempo[i] <= 0) {
-                    printf(RED "¡JUGADOR %d HA PERDIDO! SE ACABÓ EL TIEMPO.\n" RESET, i + 1);
-                    printf("------------------------\n");
-                }
-                printf(YELLOW "INVENTARIO DEL JUGADOR %d:\n" RESET, i + 1);
-                int total = 0;
-                for (Item* item = list_first(inventario[i]); item != NULL; item = list_next(inventario[i])) {
-                    printf("  - %s (Valor: %d pts, Peso: %d kg)\n", item->nombre, item->valor, item->peso);
-                    total += item->valor;
-                }
-                printf("  Puntaje final: %d pts\n", total);
-                printf("------------------------\n");
+                mostrar_interfaz_turno(escenario, inv, t, turno, num_jugadores);
             }
-            presioneTeclaParaContinuar();
-            return;
         }
 
         turno = (turno + 1) % num_jugadores;
@@ -443,27 +547,17 @@ void seleccionar_modo_juego(List *escenarios) {
     printf("------------------------\n");
     printf(CYAN "Ingresa tu elección (1 o 2): " RESET);
     int modo;
-    if (scanf("%d", &modo) != 1 || (modo != 1 && modo != 2)) {
+    char input[100];
+    if (!fgets(input, sizeof(input), stdin) || sscanf(input, "%d", &modo) != 1 || (modo != 1 && modo != 2)) {
         printf("Opción no válida. Intenta de nuevo.\n");
-        while (getchar() != '\n'); // Limpiar buffer
         presioneTeclaParaContinuar();
         return;
     }
-    while (getchar() != '\n'); // Limpiar buffer
 
     HashMap* nodos = construir_grafo(escenarios);
     if (!nodos) {
         printf("Error al construir grafo\n");
-        for (Escenario* e = list_first(escenarios); e != NULL; e = list_next(escenarios)) {
-            for (Item* item = list_first(e->items); item != NULL; item = list_next(e->items)) {
-                free(item);
-            }
-            list_clean(e->items);
-            free(e->items);
-            free(e);
-        }
-        list_clean(escenarios);
-        free(escenarios);
+        liberar_escenarios(escenarios);
         presioneTeclaParaContinuar();
         return;
     }
@@ -474,24 +568,8 @@ void seleccionar_modo_juego(List *escenarios) {
         play(nodos, 2);
     }
 
-    // Liberar nodos
-    for (Pair* pair = firstMap(nodos); pair != NULL; pair = nextMap(nodos)) {
-        free(pair->value);
-    }
-    hashmap_clean(nodos);
-    free(nodos);
-
-    // Liberar escenarios
-    for (Escenario* e = list_first(escenarios); e != NULL; e = list_next(escenarios)) {
-        for (Item* item = list_first(e->items); item != NULL; item = list_next(e->items)) {
-            free(item);
-        }
-        list_clean(e->items);
-        free(e->items);
-        free(e);
-    }
-    list_clean(escenarios);
-    free(escenarios);
+    liberar_nodos(nodos);
+    liberar_escenarios(escenarios);
     presioneTeclaParaContinuar();
 }
 
@@ -514,8 +592,7 @@ int main() {
             if (!escenarios || list_size(escenarios) == 0) {
                 printf("No se pudieron cargar los escenarios.\n");
                 if (escenarios) {
-                    list_clean(escenarios);
-                    free(escenarios);
+                    liberar_escenarios(escenarios);
                 }
                 presioneTeclaParaContinuar();
                 break;
