@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdbool.h>
 
 // Definiciones de colores ANSI
 #define RED     "\033[1;31m"
@@ -37,6 +38,20 @@ typedef struct NodoGrafo {
     struct NodoGrafo* izquierda;
     struct NodoGrafo* derecha;
 } NodoGrafo;
+
+/**
+ * Convierte el valor del campo EsFinal ("Si" o "No") en un valor booleano.
+ * @param valor Cadena que contiene "Si" o "No".
+ * @return true si el valor es "Si", false si es "No", false en caso de valor inválido.
+ */
+bool es_final(const char* valor) {
+    if (strcmp(valor, "Si") == 0) {
+        return true;
+    } else if (strcmp(valor, "No") == 0) {
+        return false;
+    }
+    return false; // Valor por defecto para casos inválidos
+}
 
 /**
  * Carga escenarios desde un archivo CSV y los almacena en una lista.
@@ -105,7 +120,7 @@ List* leer_escenarios() {
         e->abajo = atoi(campos[5]);
         e->izquierda = atoi(campos[6]);
         e->derecha = atoi(campos[7]);
-        e->esFinal = atoi(campos[8]);
+        e->esFinal = es_final(campos[8]);
 
         list_pushBack(escenarios, e);
         free(campos); // Libera la memoria de campos
@@ -390,6 +405,14 @@ void play(HashMap* nodos, int num_jugadores) {
             printf("\n" RED "✦══════ ¡FIN DEL JUEGO! ══════✦\n" RESET);
             printf("------------------------\n");
             for (int i = 0; i < num_jugadores; i++) {
+                if (escenario_actual[i]->escenario->esFinal) {
+                    printf(GREEN "¡FELICITACIONES JUGADOR %d! HAS LLEGADO A LA SALIDA.\n" RESET, i + 1);
+                    printf("------------------------\n");
+                }
+                if (tiempo[i] <= 0) {
+                    printf(RED "¡JUGADOR %d HA PERDIDO! SE ACABÓ EL TIEMPO.\n" RESET, i + 1);
+                    printf("------------------------\n");
+                }
                 printf(YELLOW "INVENTARIO DEL JUGADOR %d:\n" RESET, i + 1);
                 int total = 0;
                 for (Item* item = list_first(inventario[i]); item != NULL; item = list_next(inventario[i])) {
@@ -397,8 +420,8 @@ void play(HashMap* nodos, int num_jugadores) {
                     total += item->valor;
                 }
                 printf("  Puntaje final: %d pts\n", total);
+                printf("------------------------\n");
             }
-            printf("------------------------\n");
             presioneTeclaParaContinuar();
             return;
         }
